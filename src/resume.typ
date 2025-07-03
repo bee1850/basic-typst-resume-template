@@ -156,9 +156,9 @@
   if((today - end).days() < 5) {
     end-str = terms.at(text.lang).prsnt
   } else {
-    end-str = end.display("[month repr:short] [year]")
+    end-str = end.display("[month repr:short] [year repr:full]")
   }
-  start.display("[month repr:short] [year repr:last_two]") + " " + $dash.em$ + " " + end-str + " [" + [#distance] + "]"
+  start.display("[month repr:short] [year repr:full]") + " " + $dash.em$ + " " + end-str + " [" + [#distance] + "]"
   }
 
  
