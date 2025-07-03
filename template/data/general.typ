@@ -2,6 +2,7 @@
 
 #let personal-info = (
   name: "Berkan E.",
+  author-title: (pre: "", post: ""),
   location: "",
   email: "",
   github: "github.com/bee1850",

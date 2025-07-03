@@ -12,6 +12,7 @@
 
 #show: resume.with(
   author: personal-info.name,
+  author-title: personal-info.author-title, // Optional, if you want to show your title
   // All the lines below are optional.
   // For example, if you want to to hide your phone number:
   // feel free to comment those lines out and they will not show.

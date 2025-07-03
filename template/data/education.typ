@@ -6,9 +6,14 @@
       dates: dates-helper(datetime(day: 1, month:8, year: 2022), datetime.today()),
       degree: "Bachelors of Science, Cybersecurity",
       grade: "...",
-      description: [
-       - Test
-      ],
+      description: (
+        "en": [
+          - Test
+        ],
+        "de": [
+          - Test
+        ]
+      ),
       learned_skills: ( 
         "Technologies": 
           ("Docker", "Git", "Python", "Bash", "C/C++", "SQL", "Excel", "Word", "Powerpoint"),

@@ -5,9 +5,14 @@
       location: "",
       company: ("COMPANY NAME", "formerly ..."),
       dates: dates-helper(datetime(day: 1, month:8, year: 2022), datetime.today()), // end date today means its ongoing
-      description: [
-        - Worked as a DevOps Engineer on multiple in-house projects including topics around ...
-      ],
+      description: (
+        "en": [
+          - Worked as a DevOps Engineer on multiple in-house projects including topics around ...
+        ],
+        "de": [
+          - Arbeitete als DevOps Engineer an mehreren internen Projekten, einschließlich Themen rund um ...
+        ]
+      ),
       learned_skills: ("Technologies": ("Docker", "VIM", "Git"), "Programming/Scripting Languages": ("Python", "Bash", "...", "JavaScript"), "Operating Systems": ("..."))
     ),
 )

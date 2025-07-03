@@ -356,6 +356,7 @@
 
 #let resume(
   author: "",
+  author-title: "",
   author-position: left,
   personal-info-position: left,
   pronouns: "",
@@ -431,7 +432,11 @@
   ]
 
   // Level 1 Heading
-  [= #(author)]
+  [= #if(author-title.pre != "") {
+    [#author-title.pre]
+  } #(author) #if(author-title.post != "") {
+    [(#author-title.post)]
+  }]
 
   // Personal Info Helper
   let contact-item(value, prefix: "", link-type: "") = {
