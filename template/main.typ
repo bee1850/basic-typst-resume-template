@@ -6,6 +6,10 @@
 #import("./data/activities.typ"): activities
 #import("./data/further_skills.typ"): further_skills
 
+
+#set text(lang: "en")
+
+
 #show: resume.with(
   author: personal-info.name,
   // All the lines below are optional.

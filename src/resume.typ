@@ -1,6 +1,28 @@
 #import "@preview/scienceicons:0.1.0": cc-by-icon, email-icon, github-icon, linkedin-icon, website-icon, orcid-icon
 #let skills_state = state("skills", (:)) // Initialize skills as an empty list
 
+#let language_dict = (
+  "en": (
+    "fing": "Final Grade",
+    "educ": "Education",
+    "work": "Work Experience",
+    "extr": "Extracurricular Activities",
+    "proj": "Projects",
+    "cert": "Certificates",
+    "skil": "Skills",
+    "fski": "Further Skills",
+  ),
+  "de": (
+    "fing": "Abschlussnote",
+    "educ": "Bildung",
+    "work": "Berufserfahrung",
+    "extr": "Außerschulische Aktivitäten",
+    "proj": "Projekte",
+    "cert": "Zertifikate",
+    "skil": "Fähigkeiten",
+    "fski": "Weitere Fähigkeiten",
+  ),
+)
 
 // Generic two by two component for resume
 #let generic-two-by-two(
@@ -101,27 +123,45 @@
     end-date
   }
 
-  let distance_exact = (end - start).weeks() / 4.34524
+  let terms = (
+    "en": (
+      mnth: "month",
+      mnths: "months",
+      yrs: "years",
+      prsnt: "Present",
+    ),
+    "de": (
+      mnth: "Monat",
+      mnths: "Monate",
+      yrs: "Jahre",
+      prsnt: "Heute",
+    ),
+  )
+
+  context {
+    let distance_exact = (end - start).weeks() / 4.34524
   let distance_month = calc.floor(distance_exact) // Average number of weeks in a month
   let distance = none
   if (distance_month <= 12) {
     if(distance_month == 1) {
-      distance = [#calc.round(distance_exact, digits: 1)] + " month"
+      distance = [#calc.round(distance_exact, digits: 1)] + " " + terms.at(text.lang).mnth
     } else {
-      distance = [#calc.round(distance_exact, digits: 1)] + " months"
+      distance = [#calc.round(distance_exact, digits: 1)] + " " + terms.at(text.lang).mnths
     }
   } else {
-    distance = [#calc.round((distance_exact / 12 ), digits: 1)] + " years"
+    distance = [#calc.round((distance_exact / 12 ), digits: 1)] + " " + terms.at(text.lang).yrs
   }
   let end-str = ""
   let today = datetime.today()
   if((today - end).days() < 5) {
-    end-str = "Present"
+    end-str = terms.at(text.lang).prsnt
   } else {
     end-str = end.display("[month repr:short] [year]")
   }
-
   start.display("[month repr:short] [year repr:last_two]") + " " + $dash.em$ + " " + end-str + " [" + [#distance] + "]"
+  }
+
+ 
 }
 
 #let add_skills(dict) = {
@@ -167,12 +207,13 @@
   learned_skills: ()
 ) = {
  
-
+  context {
+    
  if(description != "") {
     generic-two-by-two-with-description(
       top-left: strong(institution),
       top-right: dates,
-      bottom-left: emph(degree + " | Final Grade:" + grade),
+      bottom-left: emph(degree + " | " + [#language_dict.at(text.lang).fing] + ": "+ grade),
       bottom-right: emph(location),
       description: description,
     )
@@ -186,6 +227,7 @@
   }
 
   add_skills(learned_skills)
+  }
 }
 
 #let work(
@@ -340,7 +382,7 @@
   extracurricular_act: (),
   further_skills: (),
 ) = {
-
+ context {
   // Sets document metadata
   set document(author: author, title: author)
 
@@ -349,7 +391,6 @@
     // LaTeX style font
     font: font,
     size: font-size,
-    lang: "en",
     // Disable ligatures so ATS systems do not get confused when parsing fonts.
     ligatures: false
   )
@@ -434,7 +475,7 @@
   set par(justify: true)
 
   if(education.len() > 0) {
-    [== Education]
+    [== #language_dict.at(text.lang).educ]
 
     for education_entry in education {
     edu(..education_entry)
@@ -445,7 +486,7 @@
   
   if(work_experience.len() > 0) {
     [#v(1fr)]
-    [== Work Experience]
+    [== #language_dict.at(text.lang).work]
 
     for work_entry in work_experience {
       work(..work_entry)
@@ -455,7 +496,7 @@
   
   if(extracurricular_act.len() > 0) {
     [#v(1fr)]
-    [== Extracurricular Activities]
+    [== #language_dict.at(text.lang).extr]
     
     for activity in extracurricular_act {
       extracurriculars(..activity)
@@ -465,7 +506,7 @@
   
   if(projects.len() > 0) {
     [#v(1fr)]
-    [== Projects]
+    [== #language_dict.at(text.lang).proj]
     for project_entry in projects {
     project(
       name: project_entry.name,
@@ -480,25 +521,26 @@
  
   if(certificates.len() > 0)  {
     [#v(1fr)]
-    [== Certificates]
+    [== #language_dict.at(text.lang).cert]
     for cert_entry in certificates {
       certificate(..cert_entry)
     }
   }
   
   [#v(1fr)]
-  [== Skills]
+  [== #language_dict.at(text.lang).skil]
   render-skills()
 
 
   if(further_skills.len() > 0)  {
     [#v(1fr)]
-    [== Further Skills]
+    [== #language_dict.at(text.lang).fski]
     for (key, value) in further_skills {
       [
         - *#key:* #value.join(", ") \
       ] 
     }
+  }
   }
 }
 
