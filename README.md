@@ -1,3 +1,6 @@
+# All credits go to Stephen Xu and Jack Gut
+
+
 # Basic Resume
 
 <div align="center">Version 0.2.8</div>

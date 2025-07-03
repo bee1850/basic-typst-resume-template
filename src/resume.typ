@@ -1,5 +1,5 @@
-#import "@preview/scienceicons:0.1.0": orcid-icon
-
+#import "@preview/scienceicons:0.1.0": cc-by-icon, email-icon, github-icon, linkedin-icon, website-icon, orcid-icon
+#let skills_state = state("skills", (:)) // Initialize skills as an empty list
 #let resume(
   author: "",
   author-position: left,
@@ -12,6 +12,7 @@
   phone: "",
   personal-site: "",
   orcid: "",
+  keywords: (),
   accent-color: "#000000",
   font: "New Computer Modern",
   paper: "us-letter",
@@ -77,7 +78,11 @@
       if link-type != "" {
         link(link-type + value)[#(prefix + value)]
       } else {
-        value
+        if(prefix != "") {
+          [#(prefix + value)]
+        } else {
+          [#(value)]
+        }
       }
     }
   }
@@ -91,15 +96,18 @@
           contact-item(pronouns),
           contact-item(phone),
           contact-item(location),
-          contact-item(email, link-type: "mailto:"),
-          contact-item(github, link-type: "https://"),
-          contact-item(linkedin, link-type: "https://"),
-          contact-item(personal-site, link-type: "https://"),
-          contact-item(orcid, prefix: [#orcid-icon(color: rgb("#AECD54"))orcid.org/], link-type: "https://orcid.org/"),
+          contact-item(email, prefix: [#email-icon(color: rgb("#353632")) ],  link-type: "mailto:"),
+          contact-item(github, prefix: [#github-icon(color: rgb("#191b10")) ],  link-type: "https://"),
+          contact-item(linkedin, prefix: [#linkedin-icon(color: rgb("#0A66C2")) ],  link-type: "https://"),
+          contact-item(personal-site, prefix: [#website-icon(color: rgb("#9c5098")) ],  link-type: "https://"),
+          contact-item(orcid, prefix: [#orcid-icon(color: rgb("#AECD54")) ], link-type: "https://orcid.org/"),
         )
         items.filter(x => x != none).join("  |  ")
       }
-    ],
+      #if(keywords != () and keywords != none and keywords != "") {
+        [\ #par(justify: true, keywords.join(", "))]
+      }
+    ]
   )
 
   // Main body.
@@ -107,6 +115,7 @@
 
   body
 }
+
 
 // Generic two by two component for resume
 #let generic-two-by-two(
@@ -118,6 +127,52 @@
   [
     #top-left #h(1fr) #top-right \
     #bottom-left #h(1fr) #bottom-right
+  ]
+}
+
+#let equals(string, comp) = {
+  // Check if the string is equal to the comparison value
+  if (string == comp) {
+    // If they are equal, return true
+    true
+  } else {
+    // If not, return false
+    false
+  }
+}
+
+#let parse-date(string) = {
+  // Define month names mapping to month numbers (zero-based)
+  let months = (
+    "Jan": 0, "Feb": 1, "Mar": 2, "Apr": 3, "May": 4, "Jun": 5,
+    "Jul": 6, "Aug": 7, "Sep": 8, "Oct": 8, "Nov": 10, "Dec": 11
+  )
+
+  // Split input string into parts
+  let parts = string.split(" ")
+
+  // Extract month and year
+  let month-str = parts.at(0)
+  let year = int(parts.at(1))
+
+  // Look up month number from mapping
+  let month = months.at(month-str) +1 // default to 0 if not found
+  
+  // Return datetime with day = 1
+  datetime(year: year, month: month, day: 1)
+}
+
+#let generic-two-by-two-with-description(
+  top-left: "",
+  top-right: "",
+  bottom-left: "",
+  bottom-right: "",
+  description: "",
+) = {
+  [
+    #top-left #h(1fr) #top-right \
+    #bottom-left #h(1fr) #bottom-right
+    #description
   ]
 }
 
@@ -133,10 +188,75 @@
 
 // Cannot just use normal --- ligature becuase ligatures are disabled for good reasons
 #let dates-helper(
-  start-date: "",
-  end-date: "",
+  start-date,
+  end-date,
 ) = {
-  start-date + " " + $dash.em$ + " " + end-date
+
+  let start = if (type(start-date) == "str") {
+    parse-date(start-date)
+  } else {
+    start-date
+  }
+
+  let end = if (type(end-date) == "str") {
+    parse-date(end-date)
+  } else {
+    end-date
+  }
+
+  let distance_exact = (end - start).weeks() / 4.34524
+  let distance_month = calc.floor(distance_exact) // Average number of weeks in a month
+  let distance = none
+  if (distance_month <= 12) {
+    if(distance_month == 1) {
+      distance = [#calc.round(distance_exact, digits: 1)] + " month"
+    } else {
+      distance = [#calc.round(distance_exact, digits: 1)] + " months"
+    }
+  } else {
+    distance = [#calc.round((distance_exact / 12 ), digits: 1)] + " years"
+  }
+  let end-str = ""
+  let today = datetime.today()
+  if((today - end).days() < 5) {
+    end-str = "Present"
+  } else {
+    end-str = end.display("[month repr:short] [year]")
+  }
+
+  start.display("[month repr:short] [year repr:last_two]") + " " + $dash.em$ + " " + end-str + " [" + [#distance] + "]"
+}
+
+#let add_skills(dict) = {
+  
+  
+  let topics = dict.keys()
+  
+  context{
+
+    let skills = skills_state.get()
+    for topic in topics {
+      let dict_items = dict.at(topic)
+        // If the topic already exists, append the new items
+        
+        
+        let existing_items = skills.at(topic, default: ())
+        
+        existing_items.push(dict_items)
+        
+        existing_items = existing_items.flatten()
+
+        // merge array
+        let new_items = existing_items.dedup()
+       
+        skills.insert(topic, new_items)
+        
+        
+    }
+    skills_state.update(skills)  
+    
+  }
+  
 }
 
 // Section components below
@@ -144,42 +264,65 @@
   institution: "",
   dates: "",
   degree: "",
-  gpa: "",
+  grade: "",
   location: "",
-  // Makes dates on upper right like rest of components
-  consistent: false,
+  description: "",
+  learned_skills: ()
 ) = {
-  if consistent {
-    // edu-constant style (dates top-right, location bottom-right)
+ 
+
+ if(description != "") {
+    generic-two-by-two-with-description(
+      top-left: strong(institution),
+      top-right: dates,
+      bottom-left: emph(degree + " | Final Grade:" + grade),
+      bottom-right: emph(location),
+      description: description,
+    )
+  } else {
     generic-two-by-two(
       top-left: strong(institution),
       top-right: dates,
       bottom-left: emph(degree),
       bottom-right: emph(location),
     )
-  } else {
-    // original edu style (location top-right, dates bottom-right)
-    generic-two-by-two(
-      top-left: strong(institution),
-      top-right: location,
-      bottom-left: emph(degree),
-      bottom-right: emph(dates),
-    )
   }
+
+  add_skills(learned_skills)
 }
 
 #let work(
   title: "",
   dates: "",
-  company: "",
+  company: (),
   location: "",
+  description: "",
+  learned_skills: ()
 ) = {
-  generic-two-by-two(
-    top-left: strong(title),
-    top-right: dates,
-    bottom-left: company,
-    bottom-right: emph(location),
-  )
+  let main_company = company.at(0)
+  let company_extra = company.slice(1, company.len())
+
+  company = [#emph(main_company), #text(9pt, company_extra.join(", "))]
+  
+
+  if(description != "") {
+    generic-two-by-two-with-description(
+      top-left: strong(title),
+      top-right: dates,
+      bottom-left: company,
+      bottom-right: location,
+      description: description,
+    )
+  } else {
+    generic-two-by-two(
+      top-left: strong(title),
+      top-right: dates,
+      bottom-left: company,
+      bottom-right: location,
+    )
+  }
+
+  add_skills(learned_skills)
 }
 
 #let project(
@@ -187,7 +330,9 @@
   name: "",
   url: "",
   dates: "",
+  learned_skills: ()
 ) = {
+
   generic-one-by-two(
     left: {
       if role == "" {
@@ -204,29 +349,60 @@
       }
     },
   )
+  
+
+  add_skills(learned_skills)
 }
 
 #let certificates(
   name: "",
   issuer: "",
   url: "",
-  date: "",
+  date: datetime,
+  until: "",
+  learned_skills: ()
 ) = {
+
   [
     *#name*, #issuer
     #if url != "" {
       [ (#link("https://" + url)[#url])]
     }
-    #h(1fr) #date
+    #h(1fr) #date.display("[month repr:short] [year]")#if((until != "Never" and until != "") and date != none) {
+      [, Expires: #until]
+    }
   ]
+  
+
+  add_skills(learned_skills)
 }
 
 #let extracurriculars(
   activity: "",
   dates: "",
+  learned_skills: ()
 ) = {
+
   generic-one-by-two(
     left: strong(activity),
     right: dates,
   )
+  add_skills(learned_skills)
+}
+
+#let render-skills() ={
+  context{
+  let skills = skills_state.get()
+
+    if(skills != none and skills != () and skills != "" and skills != "none") {
+    let topics = skills.keys()
+    topics = topics.sorted() // Sort topics alphabetically
+    for topic in topics {
+      if(topic != "PLACEHOLDER") [
+        #let skills_items = skills.at(topic)
+        - *#topic:* #skills_items.join(", ") \
+      ] 
+    }
+  }
+  }
 }
