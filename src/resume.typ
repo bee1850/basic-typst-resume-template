@@ -1,120 +1,5 @@
 #import "@preview/scienceicons:0.1.0": cc-by-icon, email-icon, github-icon, linkedin-icon, website-icon, orcid-icon
 #let skills_state = state("skills", (:)) // Initialize skills as an empty list
-#let resume(
-  author: "",
-  author-position: left,
-  personal-info-position: left,
-  pronouns: "",
-  location: "",
-  email: "",
-  github: "",
-  linkedin: "",
-  phone: "",
-  personal-site: "",
-  orcid: "",
-  keywords: (),
-  accent-color: "#000000",
-  font: "New Computer Modern",
-  paper: "us-letter",
-  author-font-size: 20pt,
-  font-size: 10pt,
-  body,
-) = {
-
-  // Sets document metadata
-  set document(author: author, title: author)
-
-  // Document-wide formatting, including font and margins
-  set text(
-    // LaTeX style font
-    font: font,
-    size: font-size,
-    lang: "en",
-    // Disable ligatures so ATS systems do not get confused when parsing fonts.
-    ligatures: false
-  )
-
-  // Reccomended to have 0.5in margin on all sides
-  set page(
-    margin: (0.5in),
-    paper: paper,
-  )
-
-  // Link styles
-  show link: underline
-
-
-  // Small caps for section titles
-  show heading.where(level: 2): it => [
-    #pad(top: 0pt, bottom: -10pt, [#smallcaps(it.body)])
-    #line(length: 100%, stroke: 1pt)
-  ]
-
-  // Accent Color Styling
-  show heading: set text(
-    fill: rgb(accent-color),
-  )
-
-  show link: set text(
-    fill: rgb(accent-color),
-  )
-
-  // Name will be aligned left, bold and big
-  show heading.where(level: 1): it => [
-    #set align(author-position)
-    #set text(
-      weight: 700,
-      size: author-font-size,
-    )
-    #pad(it.body)
-  ]
-
-  // Level 1 Heading
-  [= #(author)]
-
-  // Personal Info Helper
-  let contact-item(value, prefix: "", link-type: "") = {
-    if value != "" {
-      if link-type != "" {
-        link(link-type + value)[#(prefix + value)]
-      } else {
-        if(prefix != "") {
-          [#(prefix + value)]
-        } else {
-          [#(value)]
-        }
-      }
-    }
-  }
-
-  // Personal Info
-  pad(
-    top: 0.25em,
-    align(personal-info-position)[
-      #{
-        let items = (
-          contact-item(pronouns),
-          contact-item(phone),
-          contact-item(location),
-          contact-item(email, prefix: [#email-icon(color: rgb("#353632")) ],  link-type: "mailto:"),
-          contact-item(github, prefix: [#github-icon(color: rgb("#191b10")) ],  link-type: "https://"),
-          contact-item(linkedin, prefix: [#linkedin-icon(color: rgb("#0A66C2")) ],  link-type: "https://"),
-          contact-item(personal-site, prefix: [#website-icon(color: rgb("#9c5098")) ],  link-type: "https://"),
-          contact-item(orcid, prefix: [#orcid-icon(color: rgb("#AECD54")) ], link-type: "https://orcid.org/"),
-        )
-        items.filter(x => x != none).join("  |  ")
-      }
-      #if(keywords != () and keywords != none and keywords != "") {
-        [\ #par(justify: true, keywords.join(", "))]
-      }
-    ]
-  )
-
-  // Main body.
-  set par(justify: true)
-
-  body
-}
 
 
 // Generic two by two component for resume
@@ -172,6 +57,18 @@
   [
     #top-left #h(1fr) #top-right \
     #bottom-left #h(1fr) #bottom-right
+    #description
+  ]
+}
+
+// Generic one by two component for resume
+#let generic-one-by-two-with-description(
+  left: "",
+  right: "",
+  description: "",
+) = {
+  [
+    #left #h(1fr) #right
     #description
   ]
 }
@@ -354,7 +251,7 @@
   add_skills(learned_skills)
 }
 
-#let certificates(
+#let certificate(
   name: "",
   issuer: "",
   url: "",
@@ -380,13 +277,21 @@
 #let extracurriculars(
   activity: "",
   dates: "",
-  learned_skills: ()
+  learned_skills: (),
+  description: "",
 ) = {
-
-  generic-one-by-two(
-    left: strong(activity),
-    right: dates,
-  )
+  if(description != "") {
+    generic-one-by-two-with-description(
+      left: strong(activity),
+      right: dates,
+      description: description
+    )
+  } else {
+    generic-one-by-two(
+      left: strong(activity),
+      right: dates
+    )
+  }
   add_skills(learned_skills)
 }
 
@@ -406,3 +311,194 @@
   }
   }
 }
+
+#let resume(
+  author: "",
+  author-position: left,
+  personal-info-position: left,
+  pronouns: "",
+  location: "",
+  email: "",
+  github: "",
+  linkedin: "",
+  phone: "",
+  personal-site: "",
+  orcid: "",
+  keywords: (),
+  accent-color: "#000000",
+  font: "New Computer Modern",
+  paper: "us-letter",
+  author-font-size: 20pt,
+  font-size: 10pt,
+  body,
+
+  // Sections
+  work_experience: (),
+  education: (),
+  projects: (),
+  certificates: (),
+  extracurricular_act: (),
+  further_skills: (),
+) = {
+
+  // Sets document metadata
+  set document(author: author, title: author)
+
+  // Document-wide formatting, including font and margins
+  set text(
+    // LaTeX style font
+    font: font,
+    size: font-size,
+    lang: "en",
+    // Disable ligatures so ATS systems do not get confused when parsing fonts.
+    ligatures: false
+  )
+
+  // Reccomended to have 0.5in margin on all sides
+  set page(
+    margin: (0.5in),
+    paper: paper,
+  )
+
+  // Link styles
+  show link: underline
+
+
+  // Small caps for section titles
+  show heading.where(level: 2): it => [
+    #pad(top: 0pt, bottom: -10pt, [#smallcaps(it.body)])
+    #line(length: 100%, stroke: 1pt)
+  ]
+
+  // Accent Color Styling
+  show heading: set text(
+    fill: rgb(accent-color),
+  )
+
+  show link: set text(
+    fill: rgb(accent-color),
+  )
+
+  // Name will be aligned left, bold and big
+  show heading.where(level: 1): it => [
+    #set align(author-position)
+    #set text(
+      weight: 700,
+      size: author-font-size,
+    )
+    #pad(it.body)
+  ]
+
+  // Level 1 Heading
+  [= #(author)]
+
+  // Personal Info Helper
+  let contact-item(value, prefix: "", link-type: "") = {
+    if value != "" {
+      if link-type != "" {
+        link(link-type + value)[#(prefix + value)]
+      } else {
+        if(prefix != "") {
+          [#(prefix + value)]
+        } else {
+          [#(value)]
+        }
+      }
+    }
+  }
+
+  // Personal Info
+  pad(
+    top: 0.25em,
+    align(personal-info-position)[
+      #{
+        let items = (
+          contact-item(pronouns),
+          contact-item(phone),
+          contact-item(location),
+          contact-item(email, prefix: [#email-icon(color: rgb("#353632")) ],  link-type: "mailto:"),
+          contact-item(github, prefix: [#github-icon(color: rgb("#191b10")) ],  link-type: "https://"),
+          contact-item(linkedin, prefix: [#linkedin-icon(color: rgb("#0A66C2")) ],  link-type: "https://"),
+          contact-item(personal-site, prefix: [#website-icon(color: rgb("#9c5098")) ],  link-type: "https://"),
+          contact-item(orcid, prefix: [#orcid-icon(color: rgb("#AECD54")) ], link-type: "https://orcid.org/"),
+        )
+        items.filter(x => x != none).join("  |  ")
+      }
+      #if(keywords != () and keywords != none and keywords != "") {
+        [\ #par(justify: true, keywords.join(", "))]
+      }
+    ]
+  )
+
+  // Main body.
+  set par(justify: true)
+
+  if(education.len() > 0) {
+    [== Education]
+
+    for education_entry in education {
+    edu(..education_entry)
+  }
+  }
+  
+
+  
+  if(work_experience.len() > 0) {
+    [#v(1fr)]
+    [== Work Experience]
+
+    for work_entry in work_experience {
+      work(..work_entry)
+    }
+  }
+
+  
+  if(extracurricular_act.len() > 0) {
+    [#v(1fr)]
+    [== Extracurricular Activities]
+    
+    for activity in extracurricular_act {
+      extracurriculars(..activity)
+    }
+  }
+  
+  
+  if(projects.len() > 0) {
+    [#v(1fr)]
+    [== Projects]
+    for project_entry in projects {
+    project(
+      name: project_entry.name,
+      role: project_entry.role,
+      dates: project_entry.dates,
+      url: project_entry.url
+    )
+  }
+  }
+  
+
+ 
+  if(certificates.len() > 0)  {
+    [#v(1fr)]
+    [== Certificates]
+    for cert_entry in certificates {
+      certificate(..cert_entry)
+    }
+  }
+  
+  [#v(1fr)]
+  [== Skills]
+  render-skills()
+
+
+  if(further_skills.len() > 0)  {
+    [#v(1fr)]
+    [== Further Skills]
+    for (key, value) in further_skills {
+      [
+        - *#key:* #value.join(", ") \
+      ] 
+    }
+  }
+}
+
