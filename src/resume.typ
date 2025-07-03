@@ -74,12 +74,12 @@
   top-right: "",
   bottom-left: "",
   bottom-right: "",
-  description: "",
+  description: (),
 ) = {
-  [
+  context[
     #top-left #h(1fr) #top-right \
     #bottom-left #h(1fr) #bottom-right
-    #description
+    #description.at(text.lang)
   ]
 }
 
@@ -87,11 +87,11 @@
 #let generic-one-by-two-with-description(
   left: "",
   right: "",
-  description: "",
+  description: (),
 ) = {
-  [
+  context[
     #left #h(1fr) #right
-    #description
+    #description.at(text.lang)
   ]
 }
 
@@ -203,7 +203,7 @@
   degree: "",
   grade: "",
   location: "",
-  description: "",
+  description: (),
   learned_skills: ()
 ) = {
  
@@ -235,7 +235,7 @@
   dates: "",
   company: (),
   location: "",
-  description: "",
+  description: (),
   learned_skills: ()
 ) = {
   let main_company = company.at(0)
@@ -320,7 +320,7 @@
   activity: "",
   dates: "",
   learned_skills: (),
-  description: "",
+  description: (),
 ) = {
   if(description != "") {
     generic-one-by-two-with-description(
@@ -478,8 +478,8 @@
     [== #language_dict.at(text.lang).educ]
 
     for education_entry in education {
-    edu(..education_entry)
-  }
+      edu(..education_entry)
+    }
   }
   
 
