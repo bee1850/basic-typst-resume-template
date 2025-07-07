@@ -214,7 +214,7 @@
       top-left: strong(institution),
       top-right: dates,
       bottom-left: emph(degree + " | " + [#language_dict.at(text.lang).fing] + ": "+ grade),
-      bottom-right: emph(location),
+      bottom-right: location,
       description: description,
     )
   } else {
@@ -222,7 +222,7 @@
       top-left: strong(institution),
       top-right: dates,
       bottom-left: emph(degree),
-      bottom-right: emph(location),
+      bottom-right: location,
     )
   }
 
