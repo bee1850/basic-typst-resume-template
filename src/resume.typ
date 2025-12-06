@@ -298,7 +298,7 @@
   issuer: "",
   url: "",
   date: datetime,
-  until: "",
+  expiration: datetime,
   learned_skills: ()
 ) = {
 
@@ -307,8 +307,8 @@
     #if url != "" {
       [ (#link("https://" + url)[#url])]
     }
-    #h(1fr) #date.display("[month repr:short] [year]")#if((until != "Never" and until != "") and date != none) {
-      [, Expires: #until]
+    #h(1fr) #date.display("[month repr:short] [year]")#if(expiration.display("[year]") != "0000") {
+      [, Expires: #expiration.display("[month repr:short] [year]")]
     }
   ]
   
@@ -542,7 +542,7 @@
     [== #language_dict.at(text.lang).fski]
     for (key, value) in further_skills {
       [
-        - *#key:* #value.join(", ") \
+        - *#key:* #if(value.len() > 1) { value.join(", ")} else { value.at(0) } \
       ] 
     }
   }
