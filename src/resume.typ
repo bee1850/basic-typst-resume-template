@@ -51,8 +51,11 @@
 #let parse-date(string) = {
   // Define month names mapping to month numbers (zero-based)
   let months = (
-    "Jan": 0, "Feb": 1, "Mar": 2, "Apr": 3, "May": 4, "Jun": 5,
-    "Jul": 6, "Aug": 7, "Sep": 8, "Oct": 8, "Nov": 10, "Dec": 11
+    
+      "Jan": 0, "Feb": 1, "Mar": 2, "Apr": 3, "May": 4, "Jun": 5,
+      "Jul": 6, "Aug": 7, "Sep": 8, "Oct": 8, "Nov": 10, "Dec": 11
+    
+    
   )
 
   // Split input string into parts
@@ -156,53 +159,44 @@
   if((today - end).days() < 5) {
     end-str = terms.at(text.lang).prsnt
   } else {
-    end-str = end.display("[month repr:short] [year repr:full]")
+    end-str = end.display("[month repr:short] [year repr:full]") // TODO fix for localization
   }
   start.display("[month repr:short] [year repr:full]") + " " + $dash.em$ + " " + end-str + " [" + [#distance] + "]"
   }
-
- 
 }
 
-#let add_skills(dict) = {
-  
-  
-  let topics = dict.keys()
-  
-  context{
-
-    let skills = skills_state.get()
-    for topic in topics {
-      let dict_items = dict.at(topic)
-        // If the topic already exists, append the new items
-        
-        
+#let add_skills(array) = {
+  context {
+    for category in array {
+      // 1. Resolve context-dependent variables (text.lang) first
+      let values = category.at("values").at(text.lang, default: ()) 
+      let topic = category.at("category").at(text.lang)
+      
+      // 2. Update the state using a callback function
+      // This avoids calling .get() explicitly
+      skills_state.update(skills => {
         let existing_items = skills.at(topic, default: ())
         
-        existing_items.push(dict_items)
+        // Apply your logic to the 'skills' passed into the callback
+        existing_items.push(values)
+        let new_items = existing_items.flatten().dedup()
         
-        existing_items = existing_items.flatten()
-
-        // merge array
-        let new_items = existing_items.dedup()
-       
         skills.insert(topic, new_items)
         
-        
+        // Return the modified state
+        skills
+      })
     }
-    skills_state.update(skills)  
-    
   }
-  
 }
 
 // Section components below
 #let edu(
-  institution: "",
+  institution: (),
   dates: "",
   degree: "",
-  grade: "",
-  location: "",
+  grade: (),
+  location: (),
   description: (),
   learned_skills: ()
 ) = {
@@ -211,18 +205,18 @@
     
  if(description != "") {
     generic-two-by-two-with-description(
-      top-left: strong(institution),
+      top-left: strong(institution.at(text.lang)),
       top-right: dates,
-      bottom-left: emph(degree + " | " + [#language_dict.at(text.lang).fing] + ": "+ grade),
-      bottom-right: location,
+      bottom-left: emph(degree + " | " + [#language_dict.at(text.lang).fing] + ": "+ grade.at(text.lang)),
+      bottom-right: location.at(text.lang),
       description: description,
     )
   } else {
     generic-two-by-two(
-      top-left: strong(institution),
+      top-left: strong(institution.at(text.lang)),
       top-right: dates,
       bottom-left: emph(degree),
-      bottom-right: location,
+      bottom-right: location.at(text.lang),
     )
   }
 
@@ -231,33 +225,33 @@
 }
 
 #let work(
-  title: "",
+  title: ("de": "", "en": ""),
   dates: "",
   company: (),
-  location: "",
-  description: (),
+  location: ("de": "", "en": ""),
+  description: ("de": (), "en": ()),
   learned_skills: ()
 ) = {
-  let main_company = company.at(0)
-  let company_extra = company.slice(1, company.len())
+  let main_company = company.at(text.lang).at(0)
+  let company_extra = company.at(text.lang).slice(1, company.len())
 
   company = [#emph(main_company), #text(9pt, company_extra.join(", "))]
   
 
   if(description != "") {
     generic-two-by-two-with-description(
-      top-left: strong(title),
+      top-left: strong(title.at(text.lang)),
       top-right: dates,
       bottom-left: company,
-      bottom-right: location,
+      bottom-right: location.at(text.lang),
       description: description,
     )
   } else {
     generic-two-by-two(
-      top-left: strong(title),
+      top-left: strong(title.at(text.lang)),
       top-right: dates,
       bottom-left: company,
-      bottom-right: location,
+      bottom-right: location.at(text.lang),
     )
   }
 
@@ -324,13 +318,13 @@
 ) = {
   if(description != "") {
     generic-one-by-two-with-description(
-      left: strong(activity),
+      left: strong(activity.at(text.lang)),
       right: dates,
       description: description
     )
   } else {
     generic-one-by-two(
-      left: strong(activity),
+      left: strong(activity.at(text.lang)),
       right: dates
     )
   }
@@ -340,11 +334,13 @@
 #let render-skills() ={
   context{
   let skills = skills_state.get()
-
+   
     if(skills != none and skills != () and skills != "" and skills != "none") {
+    
     let topics = skills.keys()
     topics = topics.sorted() // Sort topics alphabetically
     for topic in topics {
+      
       if(topic != "PLACEHOLDER") [
         #let skills_items = skills.at(topic)
         - *#topic:* #skills_items.join(", ") \
@@ -461,7 +457,7 @@
         let items = (
           contact-item(pronouns),
           contact-item(phone),
-          contact-item(location),
+          contact-item(location.at(text.lang)),
           contact-item(email, prefix: [#email-icon(color: rgb("#353632")) ],  link-type: "mailto:"),
           contact-item(github, prefix: [#github-icon(color: rgb("#191b10")) ],  link-type: "https://"),
           contact-item(linkedin, prefix: [#linkedin-icon(color: rgb("#0A66C2")) ],  link-type: "https://"),
@@ -532,20 +528,14 @@
     }
   }
   
+  add_skills(further_skills)
+
   [#v(1fr)]
   [== #language_dict.at(text.lang).skil]
   render-skills()
 
 
-  if(further_skills.len() > 0)  {
-    [#v(1fr)]
-    [== #language_dict.at(text.lang).fski]
-    for (key, value) in further_skills {
-      [
-        - *#key:* #if(value.len() > 1) { value.join(", ")} else { value.at(0) } \
-      ] 
-    }
-  }
+  
   }
 }
 
